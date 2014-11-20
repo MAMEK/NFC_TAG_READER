@@ -9,13 +9,23 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/*
+* Activity for reading data from an NDEF Tag.
+* */
 
 public class MainActivity extends Activity {
+
+    public static final String TAG = "Robust NFC Reader";
+
+    private TextView mTextView;
+    private NfcAdapter mNfcAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mTextView = (TextView) findViewById(R.id.textView_explanation);
     }
 
 
