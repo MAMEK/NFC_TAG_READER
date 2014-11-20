@@ -16,15 +16,9 @@
         android:textSize="30sp" />
 
     <TextView
+        android:id="@+id/textView_explanation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="ROBUST"
-        android:id="@+id/textView_explanation"
-        android:nestedScrollingEnabled="false"
-        android:textSize="100sp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="73dp" />
+        android:text="@string/explanation" />
 
 </RelativeLayout>

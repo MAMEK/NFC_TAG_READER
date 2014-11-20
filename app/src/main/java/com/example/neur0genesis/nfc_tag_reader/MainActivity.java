@@ -17,16 +17,35 @@ public class MainActivity extends Activity {
 
     public static final String TAG = "Robust NFC Reader";
 
-    private TextView mTextView;
-    private NfcAdapter mNfcAdapter;
+    private TextView mTextView; //Object for displaying text to the user. (Can be edited but optional).
+    private NfcAdapter mNfcAdapter; //Object for fetching the default NFC adapter by using a helper.
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    @Override //Annotation to indicate that we are overriding the superclass.
+    protected void onCreate(Bundle savedInstanceState) { //'Protected' limits access to the package.
+        super.onCreate(savedInstanceState); //Parse in the 'savedInstanceState' into the onCreate method in the
+        setContentView(R.layout.activity_main); //Show main activity after initializing the application.
 
-        mTextView = (TextView) findViewById(R.id.textView_explanation);
+        mTextView = (TextView) findViewById(R.id.textView_explanation); //Display the view with a specific ID (in the .xml).
+
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this); //Set mNfcAdapter to the default NFC adapter.
+
+        if (mNfcAdapter == null) {
+            // Stop here, we definitely need NFC
+            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show(); //LENGTH_LONG refers to the display time
+            finish(); //Finish main activity
+            return;
+
+        }
+
+        if (!mNfcAdapter.isEnabled()) {
+            mTextView.setText("NFC is disabled.");
+        } else {
+            mTextView.setText(R.string.explanation);
+        }
+
     }
+
+
 
 
     @Override
