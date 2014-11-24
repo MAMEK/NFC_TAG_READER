@@ -1,7 +1,13 @@
 package com.example.neur0genesis.nfc_tag_reader;
 
 import android.app.Activity;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.nfc.NfcAdapter;
@@ -13,6 +19,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+
 
 
 /*
@@ -21,26 +30,26 @@ import android.content.IntentFilter.MalformedMimeTypeException;
 
 public class MainActivity extends Activity {
 
-    public static final String TAG = "Robust NFC Reader";
-
-    private TextView mTextView; //Object for displaying text to the user. (Can be edited but optional).
-    private NfcAdapter mNfcAdapter; //Object for fetching the default NFC adapter by using a helper.
-
     public static final String MIME_TEXT_PLAIN = "text/plain";
+    public static final String TAG = "NfcDemo";
+    public int count = 1;
 
-    @Override //Annotation to indicate that we are overriding the superclass.
-    protected void onCreate(Bundle savedInstanceState) { //'Protected' limits access to the package.
-        super.onCreate(savedInstanceState); //Parse in the 'savedInstanceState' into the onCreate method in the
-        setContentView(R.layout.activity_main); //Show main activity after initializing the application.
+    private TextView mTextView;
+    private NfcAdapter mNfcAdapter;
 
-        mTextView = (TextView) findViewById(R.id.textView_explanation); //Display the view with a specific ID (in the .xml).
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this); //Set mNfcAdapter to the default NFC adapter.
+        mTextView = (TextView) findViewById(R.id.textView_explanation);
+
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if (mNfcAdapter == null) {
             // Stop here, we definitely need NFC
-            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show(); //LENGTH_LONG refers to the display time
-            finish(); //Finish main activity
+            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
+            finish();
             return;
 
         }
@@ -51,24 +60,25 @@ public class MainActivity extends Activity {
             mTextView.setText(R.string.explanation);
         }
 
+        handleIntent(getIntent());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        /**
-         * It's important, that the activity is in the foreground (resumed). Otherwise
-         * an IllegalStateException is thrown.
-         */
+		/*
+		 * It's important, that the activity is in the foreground (resumed). Otherwise
+		 * an IllegalStateException is thrown.
+		 */
         setupForegroundDispatch(this, mNfcAdapter);
     }
 
     @Override
     protected void onPause() {
-        /**
-         * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
-         */
+		/*
+		 * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
+		 */
         stopForegroundDispatch(this, mNfcAdapter);
 
         super.onPause();
@@ -76,18 +86,35 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onNewIntent(Intent intent) {
-        /**
-         * This method gets called, when a new Intent gets associated with the current activity instance.
-         * Instead of creating a new activity, onNewIntent will be called. For more information have a look
-         * at the documentation.
-         *
-         * In our case this method gets called, when the user attaches a Tag to the device.
-         */
+		/*
+		 * This method gets called, when a new Intent gets associated with the current activity instance.
+		 * Instead of creating a new activity, onNewIntent will be called. For more information have a look
+		 * at the documentation.
+		 *
+		 * In our case this method gets called, when the user attaches a Tag to the device.
+		 */
         handleIntent(intent);
     }
 
     private void handleIntent(Intent intent) {
-        // TODO: handle Intent
+        String action = intent.getAction();
+
+        if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
+                || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
+
+            String number = Integer.toString(count);
+            mTextView.setText(number);
+            count = count + 1;
+            byte[] id = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID);
+            mTextView.setText(getDec(id));
+            System.out.println(getDec(id));
+
+            if (getDec(id).equals("236387626630")) {
+                System.out.println("It worked!");
+            }
+
+        }
     }
 
     /**
@@ -113,7 +140,7 @@ public class MainActivity extends Activity {
             throw new RuntimeException("Check your mime type.");
         }
 
-        adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);
+        adapter.enableForegroundDispatch(activity, pendingIntent, null, techList); //Set filter to null so that it will always dispatch
     }
 
     /**
@@ -124,25 +151,86 @@ public class MainActivity extends Activity {
         adapter.disableForegroundDispatch(activity);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    /**
+     * Background task for reading the data. Do not block the UI thread while reading.
+     *
+     * @author Ralf Wondratschek
+     *
+     */
+    private class NdefReaderTask extends AsyncTask<Tag, Void, String> {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        @Override
+        protected String doInBackground(Tag... params) {
+            Tag tag = params[0];
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+            Ndef ndef = Ndef.get(tag);
+            if (ndef == null) {
+                // NDEF is not supported by this Tag.
+                return null;
+            }
+
+            NdefMessage ndefMessage = ndef.getCachedNdefMessage();
+
+            NdefRecord[] records = ndefMessage.getRecords();
+            for (NdefRecord ndefRecord : records) {
+                if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN && Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT)) {
+                    try {
+                        return readText(ndefRecord);
+                    } catch (UnsupportedEncodingException e) {
+                        Log.e(TAG, "Unsupported Encoding", e);
+                    }
+                }
+            }
+
+            return null;
         }
 
-        return super.onOptionsItemSelected(item);
+        private String readText(NdefRecord record) throws UnsupportedEncodingException {
+			/*
+			 * See NFC forum specification for "Text Record Type Definition" at 3.2.1
+			 *
+			 * http://www.nfc-forum.org/specs/
+			 *
+			 * bit_7 defines encoding
+			 * bit_6 reserved for future use, must be 0
+			 * bit_5..0 length of IANA language code
+			 */
+
+            byte[] payload = record.getPayload();
+
+            // Get the Text Encoding
+            String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
+
+            // Get the Language Code
+            int languageCodeLength = payload[0] & 0063;
+
+            // String languageCode = new String(payload, 1, languageCodeLength, "US-ASCII");
+            // e.g. "en"
+
+            // Get the Text
+            return new String(payload, languageCodeLength + 1, payload.length - languageCodeLength - 1, textEncoding);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                mTextView.setText("Read content: " + result);
+            }
+        }
+    }
+
+    private String getDec(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+
+        long result = 0;
+        long factor = 1;
+        for (int i = 0; i < bytes.length; ++i) {
+            long value = bytes[i] & 0xffl;
+            result += value * factor;
+            factor *= 1;
+            String s = String.valueOf(result);
+            sb.append(s);
+        }
+        return sb.toString();
     }
 }
