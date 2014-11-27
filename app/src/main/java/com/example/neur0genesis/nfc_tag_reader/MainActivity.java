@@ -18,6 +18,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.widget.ToggleButton;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -110,8 +111,13 @@ public class MainActivity extends Activity {
             mTextView.setText(getDec(id));
             System.out.println(getDec(id));
 
-            if (getDec(id).equals("236387626630")) {
-                System.out.println("It worked!");
+            ToggleButton toggle = (ToggleButton) findViewById(R.id.toggle_player_one);
+
+            if (getDec(id).equals("59240445625")) {
+                mTextView.setText("Player 1 with id:" + getDec(id));
+                toggle.setChecked(true);
+            } else if (getDec(id).equals("228310558758")) {
+                    mTextView.setText("Player 2");
             }
 
         }

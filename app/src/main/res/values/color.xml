@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="redOn">#D92B2B</color>
+    <color name="redOff">#ff661c1c</color>
+</resources>
