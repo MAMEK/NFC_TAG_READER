@@ -1,6 +1,8 @@
 package com.example.neur0genesis.nfc_tag_reader;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.graphics.Outline;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.Tag;
@@ -8,17 +10,18 @@ import android.nfc.tech.Ndef;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.nfc.NfcAdapter;
-import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
-import android.widget.ToggleButton;
+
+
+import com.shamanland.fab.FloatingActionButton;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -31,6 +34,8 @@ import java.util.Arrays;
 
 public class MainActivity extends Activity {
 
+    DBAdapter myDb;
+
     public static final String MIME_TEXT_PLAIN = "text/plain";
     public static final String TAG = "NfcDemo";
     public int count = 1;
@@ -40,29 +45,96 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextView = (TextView) findViewById(R.id.textView_explanation);
+        mTextView = (TextView) findViewById(R.id.TAGtextView);
 
+        //Open DB
+        openDB();
+
+        //Get default adapter
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
         if (mNfcAdapter == null) {
-            // Stop here, we definitely need NFC
+            //Stop here, we definitely need NFC
             Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
+        }
+
+        if (mNfcAdapter != null) {
+            if (!mNfcAdapter.isEnabled()) {
+                //mTextView.setText("NFC is disabled.");
+            } else {
+                handleIntent(getIntent());
+            }
+
+            Cursor cursor = myDb.getAllRows();
+            displayRecordSet(cursor);
 
         }
 
-        if (!mNfcAdapter.isEnabled()) {
-            mTextView.setText("NFC is disabled.");
-        } else {
-            mTextView.setText(R.string.explanation);
-        }
+        View fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                long newID = myDb.insertRow("Waldo", 987,"red");
+                Cursor cursor = myDb.getAllRows();
+                displayRecordSet(cursor);
+            }
+        });
 
-        handleIntent(getIntent());
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        closeDB();
+    }
+
+    //Close DB
+    private void closeDB() {
+        myDb.close();
+    }
+
+    //Instantiate the DB adapter
+    private void openDB() {
+        myDb = new DBAdapter(this);
+        myDb.open();
+    }
+
+    private void displayText(String message) {
+        TextView textView = (TextView) findViewById(R.id.showId);
+        textView.setText(message);
+    }
+
+    //Display entire record set to screen.
+    private void displayRecordSet(Cursor cursor) {
+        String message = "!";
+        //Populate the message from the cursor
+
+        //Reset cursor to start, checking to see if there is data:
+        if (cursor.moveToFirst()) {
+            do {
+                //Process the data:
+                int id = cursor.getInt(0);
+                String name = cursor.getString(1);
+                int studentNumber = cursor.getInt(2);
+
+                //Append data to the message:
+                message += "id=" + id
+                        + ", name" + name
+                        + ", #=" + studentNumber
+                        + "\n";
+            } while(cursor.moveToNext());
+        }
+        //Close cursor to avoid resource leak:
+        cursor.close();
+
+        displayText(message);
+    }
+
 
     @Override
     protected void onResume() {
@@ -72,7 +144,10 @@ public class MainActivity extends Activity {
 		 * It's important, that the activity is in the foreground (resumed). Otherwise
 		 * an IllegalStateException is thrown.
 		 */
-        setupForegroundDispatch(this, mNfcAdapter);
+
+        if (mNfcAdapter != null) {
+            setupForegroundDispatch(this, mNfcAdapter);
+        }
     }
 
     @Override
@@ -80,20 +155,15 @@ public class MainActivity extends Activity {
 		/*
 		 * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
 		 */
-        stopForegroundDispatch(this, mNfcAdapter);
+
+        if (mNfcAdapter != null) {
+            stopForegroundDispatch(this, mNfcAdapter);
+        }
 
         super.onPause();
     }
 
-    @Override
     protected void onNewIntent(Intent intent) {
-		/*
-		 * This method gets called, when a new Intent gets associated with the current activity instance.
-		 * Instead of creating a new activity, onNewIntent will be called. For more information have a look
-		 * at the documentation.
-		 *
-		 * In our case this method gets called, when the user attaches a Tag to the device.
-		 */
         handleIntent(intent);
     }
 
@@ -111,15 +181,19 @@ public class MainActivity extends Activity {
             mTextView.setText(getDec(id));
             System.out.println(getDec(id));
 
-            ToggleButton toggle = (ToggleButton) findViewById(R.id.toggle_player_one);
 
             if (getDec(id).equals("59240445625")) {
-                mTextView.setText("Player 1 with id:" + getDec(id));
-                toggle.setChecked(true);
-            } else if (getDec(id).equals("228310558758")) {
-                    mTextView.setText("Player 2");
-            }
+                mTextView.setText("Player 1 | option 1 | with id: " + getDec(id));
+                long newID = myDb.insertRow("Waldo", 987,"red");
+                Cursor cursor = myDb.getAllRows();
+                displayRecordSet(cursor);
 
+            } else if (getDec(id).equals("2848297313")) {
+                mTextView.setText("Player 2 | option 1 | with id: " + getDec(id));
+                myDb.deleteAll();
+                Cursor cursor = myDb.getAllRows();
+                displayRecordSet(cursor);
+            }
         }
     }
 

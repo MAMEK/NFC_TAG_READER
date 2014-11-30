@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/NFC_TAG_READER.iml" filepath="$PROJECT_DIR$/NFC_TAG_READER.iml" />
       <module fileurl="file://$PROJECT_DIR$/NFC_TAG_READER_MAMEK_OLD.iml" filepath="$PROJECT_DIR$/NFC_TAG_READER_MAMEK_OLD.iml" />
       <module fileurl="file://$PROJECT_DIR$/NFC_TAG_READER_ROBUST.iml" filepath="$PROJECT_DIR$/NFC_TAG_READER_ROBUST.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NFC_TAG_READER_THIS.iml" filepath="$PROJECT_DIR$/NFC_TAG_READER_THIS.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
