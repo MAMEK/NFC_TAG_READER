@@ -3,6 +3,7 @@ package com.example.neur0genesis.nfc_tag_reader;
 import android.app.Activity;
 import android.database.Cursor;
 import android.graphics.Outline;
+import android.graphics.drawable.AnimationDrawable;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.Tag;
@@ -12,7 +13,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.nfc.NfcAdapter;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.PendingIntent;
@@ -50,6 +54,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         mTextView = (TextView) findViewById(R.id.TAGtextView);
+        final ImageView cardView = (ImageView) findViewById(R.id.cardView);
+
 
         //Open DB
         openDB();
@@ -78,9 +84,36 @@ public class MainActivity extends Activity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                long newID = myDb.insertRow("Waldo", 987,"red");
-                Cursor cursor = myDb.getAllRows();
-                displayRecordSet(cursor);
+
+                    switch (count) {
+
+                    case 1:
+                        cardView.setImageResource(
+                                R.drawable.card_2);
+                        break;
+
+                    case 2:
+                        cardView.setImageResource(
+                                R.drawable.card_3);
+                        break;
+
+                    case 3:
+                        cardView.setImageResource(
+                                R.drawable.card_4);
+                        break;
+
+                    case 4:
+                        cardView.setImageResource(
+                                R.drawable.card_5);
+                        break;
+
+                    case 5:
+                        cardView.setImageResource(
+                                R.drawable.card_6);
+                        break;
+                }
+
+                count += 1;
             }
         });
 
@@ -111,7 +144,7 @@ public class MainActivity extends Activity {
 
     //Display entire record set to screen.
     private void displayRecordSet(Cursor cursor) {
-        String message = "!";
+        String message = "";
         //Populate the message from the cursor
 
         //Reset cursor to start, checking to see if there is data:
