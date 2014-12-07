@@ -80,37 +80,71 @@ public class MainActivity extends Activity {
 
         }
 
-        View fab = findViewById(R.id.fab);
+        final View fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                     switch (count) {
 
-                    case 1:
-                        cardView.setImageResource(
-                                R.drawable.card_2);
-                        break;
+                        case 1:
+                            cardView.setImageResource(
+                                    R.drawable.card_2);
+                            break;
 
-                    case 2:
-                        cardView.setImageResource(
-                                R.drawable.card_3);
-                        break;
+                        case 2:
+                            cardView.setImageResource(
+                                    R.drawable.card_3);
+                            break;
 
-                    case 3:
-                        cardView.setImageResource(
-                                R.drawable.card_4);
-                        break;
+                        case 3:
+                            cardView.setImageResource(
+                                    R.drawable.card_4);
+                            break;
 
-                    case 4:
-                        cardView.setImageResource(
-                                R.drawable.card_5);
-                        break;
+                        case 4:
+                            cardView.setImageResource(
+                                    R.drawable.card_5);
+                            break;
 
-                    case 5:
-                        cardView.setImageResource(
-                                R.drawable.card_6);
-                        break;
+                        case 5:
+                            cardView.setImageResource(
+                                    R.drawable.card_6);
+                            break;
+
+                        case 6:
+                            cardView.setImageResource(
+                                    R.drawable.card_7);
+                            break;
+
+                        case 7:
+                            cardView.setImageResource(
+                                    R.drawable.card_8);
+                            break;
+
+                        case 8:
+                            cardView.setImageResource(
+                                    R.drawable.card_9);
+                            break;
+
+                        case 9:
+                            cardView.setImageResource(
+                                    R.drawable.card_10);
+                            break;
+
+                        case 10:
+                            cardView.setImageResource(
+                                    R.drawable.card_11);
+                            break;
+
+                        case 11:
+                            cardView.setImageResource(
+                                    R.drawable.card_12);
+                                    fab.setVisibility(View.GONE);
+                            break;
+
+
+
                 }
 
                 count += 1;
