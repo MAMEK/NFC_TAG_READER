@@ -56,7 +56,6 @@ public class MainActivity extends Activity {
         mTextView = (TextView) findViewById(R.id.TAGtextView);
         final ImageView cardView = (ImageView) findViewById(R.id.cardView);
 
-
         //Open DB
         openDB();
 
@@ -85,72 +84,31 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                    switch (count) {
-
-                        case 1:
-                            cardView.setImageResource(
-                                    R.drawable.card_2);
-                            break;
-
-                        case 2:
-                            cardView.setImageResource(
-                                    R.drawable.card_3);
-                            break;
-
-                        case 3:
-                            cardView.setImageResource(
-                                    R.drawable.card_4);
-                            break;
-
-                        case 4:
-                            cardView.setImageResource(
-                                    R.drawable.card_5);
-                            break;
-
-                        case 5:
-                            cardView.setImageResource(
-                                    R.drawable.card_6);
-                            break;
-
-                        case 6:
-                            cardView.setImageResource(
-                                    R.drawable.card_7);
-                            break;
-
-                        case 7:
-                            cardView.setImageResource(
-                                    R.drawable.card_8);
-                            break;
-
-                        case 8:
-                            cardView.setImageResource(
-                                    R.drawable.card_9);
-                            break;
-
-                        case 9:
-                            cardView.setImageResource(
-                                    R.drawable.card_10);
-                            break;
-
-                        case 10:
-                            cardView.setImageResource(
-                                    R.drawable.card_11);
-                            break;
-
-                        case 11:
-                            cardView.setImageResource(
-                                    R.drawable.card_12);
-                                    fab.setVisibility(View.GONE);
-                            break;
-
-
-
-                }
-
                 count += 1;
+
+                int id = getResources().getIdentifier("com.example.neur0genesis.nfc_tag_reader:drawable/" + "card_" + count, null, null);
+
+                cardView.setImageResource(
+                id);
+                //fab.setVisibility(View.GONE);
+                System.out.println(count);
             }
         });
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("card count",count);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        count = savedInstanceState.getInt("card count", 0);
     }
 
     @Override
